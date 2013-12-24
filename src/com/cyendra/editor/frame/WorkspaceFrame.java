@@ -126,9 +126,10 @@ class ConfirmButtonListener implements ActionListener {
 		this.editorFrame = editorFrame;
 	}
 	public void actionPerformed(ActionEvent arg0) {
+		//System.out.println(spaceFrame.toString());
+		//System.out.println(editorFrame.toString());
 		editorFrame.initFrame(new WorkSpace(spaceFrame.getFolder(), editorFrame));
 		editorFrame.setVisible(true);
-		//editorFrame.setSize(900, 600);
 		spaceFrame.setVisible(false);
 	}
 }

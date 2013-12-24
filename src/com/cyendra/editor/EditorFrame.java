@@ -9,8 +9,14 @@ import java.awt.event.InputEvent;
 import java.io.File;
 
 import javax.swing.*;
+import javax.swing.tree.TreePath;
 
+import com.cyendra.editor.commons.AddInfo;
 import com.cyendra.editor.commons.WorkSpace;
+import com.cyendra.editor.frame.AddFrame;
+import com.cyendra.editor.handler.add.AddFileHandler;
+import com.cyendra.editor.tree.ProjectTreeModel;
+import com.cyendra.editor.tree.ProjectTreeNode;
 import com.cyendra.editor.tree.TreeCreator;
 
 /**
@@ -43,7 +49,7 @@ public class EditorFrame extends JFrame {
 	//新建文件的Action对象
 	private Action fileNew = new AbstractAction("新建文件", new ImageIcon("images/newFile.gif")) {
 		public void actionPerformed(ActionEvent e) {
-			//newFile();
+			newFile();
 		}
 	};
 	//新建目录的Action对象
@@ -122,8 +128,12 @@ public class EditorFrame extends JFrame {
 	//建树及节点器
 	private TreeCreator treeCreator;
 	
+	//添加界面
+	private AddFrame addFrame;
+	
 	public EditorFrame(TreeCreator treeCreator) {
 		super();
+		this.treeCreator = treeCreator;
 		this.setTitle("IDE");
 	}
 	
@@ -131,6 +141,7 @@ public class EditorFrame extends JFrame {
 	 * 初始化窗体
 	 * */
 	public void initFrame(WorkSpace space) {
+		this.workSpace = space;
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		//主编辑区和信息显示区
@@ -149,7 +160,7 @@ public class EditorFrame extends JFrame {
 		this.add(editorSplitPane);
 		
 		//建立项目显示区
-		tree = new JTree();
+		tree = treeCreator.createTree(this);//创建树
 		treePane = new JScrollPane(tree);
 		mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,treePane,editorSplitPane);
 		mainSplitPane.setDividerLocation(200);
@@ -160,8 +171,8 @@ public class EditorFrame extends JFrame {
 		createMenuBar();
 		createToolBar();
 		
-		//创建树
-		tree = treeCreator.createTree(this);
+		
+		//tree = treeCreator.createTree(this);
 		
 		//添加监听器
 		addListeners();
@@ -227,6 +238,35 @@ public class EditorFrame extends JFrame {
 
 	public WorkSpace getWorkSpace() {
 		return workSpace;
+	}
+	
+	public ProjectTreeNode getSelectNode(){
+		TreePath path = tree.getSelectionPath();
+		if (path != null){
+			ProjectTreeNode selectNode = (ProjectTreeNode)path.getLastPathComponent();
+			return selectNode;
+		}
+		return null;
+	}
+	
+	//新建文件的Action对象
+	public void newFile(){
+		AddInfo info = new AddInfo("文件名称：", this, new AddFileHandler());
+		showAddFrame(info);
+	}
+	
+	//显示新增的界面
+	private void showAddFrame(AddInfo info){
+		setEnabled(false);
+		addFrame = new AddFrame(info);
+		addFrame.pack();
+		addFrame.setVisible(true);
+	}
+
+	public void reloadNode(ProjectTreeNode selectNode) {
+		if (selectNode == null) return;
+		ProjectTreeModel model = (ProjectTreeModel)getTree().getModel();
+		model.reload(selectNode, treeCreator);
 	}
 	
 }
